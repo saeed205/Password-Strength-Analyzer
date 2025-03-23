@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جعبه ابزار رمز عبور مدرن</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Vazirmatn', sans-serif; }
+    .glass {
+      backdrop-filter: blur(12px);
+      background-color: rgba(255,255,255,0.05);
+    }
+    .toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border: 1px solid #4B5563;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    .toggle-btn.enabled {
+      background-color: #2563EB;
+      border-color: #2563EB;
+    }
+    .toggle-btn svg {
+      width: 0rem;
+      height: 0rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-950 text-white p-4">
+  <main class="min-h-screen flex items-center justify-center">
+    <div class="glass shadow-lg rounded-lg p-8 max-w-3xl w-full">
+      <header class="mb-8 text-center">
+        <h1 class="text-4xl font-bold">🔐 جعبه ابزار رمز عبور</h1>
+      </header>
+
+      <!-- Password Strength Analyzer -->
+      <section class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">تحلیل قدرت رمز عبور</h2>
+        <input id="password-input" type="password" placeholder="رمز عبور خود را وارد کنید" class="w-full py-3 px-4 rounded-md bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+        <div class="mt-4">
+          <div class="h-2 rounded-md bg-gray-700 overflow-hidden">
+            <div id="strength-bar" class="h-2 transition-all bg-gray-300 w-0"></div>
+          </div>
+          <p id="strength-label" class="mt-2 text-sm"></p>
+          <p id="crack-time" class="text-xs text-gray-400"></p>
+          <ul id="hints" class="text-xs text-red-400 mt-2 list-disc list-inside space-y-1"></ul>
+        </div>
+      </section>
+
+      <hr class="border-gray-700 mb-8">
+
+      <!-- Password Generator -->
+      <section>
+        <h2 class="text-2xl font-semibold mb-4">تولیدکننده رمز عبور قوی</h2>
+        <div class="mb-4 flex flex-wrap gap-4">
+          <!-- Toggle for Uppercase -->
+          <button type="button" class="toggle-btn enabled" id="toggle-uppercase" data-enabled="true">
+            <svg class="fill-current" viewBox="0 0 20 20">
+              <path d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"></path>
+            </svg>
+            <span>حروف بزرگ</span>
+          </button>
+          <!-- Toggle for Lowercase -->
+          <button type="button" class="toggle-btn enabled" id="toggle-lowercase" data-enabled="true">
+            <svg class="fill-current" viewBox="0 0 20 20">
+              <path d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"></path>
+            </svg>
+            <span>حروف کوچک</span>
+          </button>
+          <!-- Toggle for Numbers -->
+          <button type="button" class="toggle-btn enabled" id="toggle-numbers" data-enabled="true">
+            <svg class="fill-current" viewBox="0 0 20 20">
+              <path d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"></path>
+            </svg>
+            <span>اعداد</span>
+          </button>
+          <!-- Toggle for Symbols -->
+          <button type="button" class="toggle-btn enabled" id="toggle-symbols" data-enabled="true">
+            <svg class="fill-current" viewBox="0 0 20 20">
+              <path d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"></path>
+            </svg>
+            <span>نمادها</span>
+          </button>
+        </div>
+
+        <div class="mb-4">
+          <label class="block">
+            <span class="text-sm">طول رمز عبور: <span id="length-val">14</span></span>
+            <input type="range" id="length-slider" min="8" max="32" value="14" class="w-full accent-blue-500">
+          </label>
+        </div>
+
+        <div class="flex gap-2 mb-4">
+          <input id="generated-password" readonly class="flex-1 py-3 px-4 rounded-md bg-gray-800">
+          <button id="copy-btn" class="px-4 bg-blue-600 hover:bg-blue-700 rounded-md transition">کپی</button>
+        </div>
+
+        <div class="mb-4">
+          <button id="generate-btn" class="w-full py-3 bg-green-600 hover:bg-green-700 rounded-md transition">تولید رمز عبور</button>
+        </div>
+
+        <div>
+          <a href="help.html" target="_blank" class="block text-center py-3 bg-red-600 hover:bg-red-700 rounded-md transition">چرا به یک رمز قوی نیاز دارم؟</a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // Toggle button functionality
+    const toggleButtons = document.querySelectorAll('.toggle-btn');
+    toggleButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const isEnabled = btn.getAttribute('data-enabled') === 'true';
+        btn.setAttribute('data-enabled', !isEnabled);
+        btn.classList.toggle('enabled', !isEnabled);
+        // Optionally update the icon (for simplicity, we're using the same icon)
+      });
+    });
+
+    const passwordInput = document.getElementById('password-input');
+    const strengthBar = document.getElementById('strength-bar');
+    const strengthLabel = document.getElementById('strength-label');
+    const crackTimeDisplay = document.getElementById('crack-time');
+    const hintsList = document.getElementById('hints');
+    const generateBtn = document.getElementById('generate-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const generatedPasswordField = document.getElementById('generated-password');
+    const lengthSlider = document.getElementById('length-slider');
+    const lengthVal = document.getElementById('length-val');
+
+    const MIN_LENGTH = 14;
+
+    function estimateCrackTime(password) {
+      const base = 1e9;
+      let charset = 0;
+      if (/[a-z]/.test(password)) charset += 26;
+      if (/[A-Z]/.test(password)) charset += 26;
+      if (/[0-9]/.test(password)) charset += 10;
+      if (/[^a-zA-Z0-9]/.test(password)) charset += 32;
+
+      const guesses = Math.pow(charset, password.length);
+      const seconds = guesses / base;
+
+      const timeUnits = [
+        ['میلی‌ثانیه', 1e-3],
+        ['ثانیه', 1],
+        ['دقیقه', 60],
+        ['ساعت', 3600],
+        ['روز', 86400],
+        ['هفته', 604800],
+        ['ماه', 2629746],
+        ['سال', 31556952],
+        ['قرن', 3155695200],
+      ];
+
+      for (let i = timeUnits.length - 1; i >= 0; i--) {
+        const [unit, duration] = timeUnits[i];
+        if (seconds >= duration) {
+          return `${(seconds / duration).toFixed(1)} ${unit}`;
+        }
+      }
+
+      return 'کمتر از یک میلی‌ثانیه';
+    }
+
+    function updateStrength() {
+      const pwd = passwordInput.value;
+      let score = 0;
+      hintsList.innerHTML = '';
+
+      const checks = [
+        { regex: new RegExp(`.{${MIN_LENGTH},}`), hint: `حداقل ${MIN_LENGTH} کاراکتر استفاده کنید` },
+        { regex: /[A-Z]/, hint: 'از حروف بزرگ استفاده کنید' },
+        { regex: /[a-z]/, hint: 'از حروف کوچک استفاده کنید' },
+        { regex: /[0-9]/, hint: 'از اعداد استفاده کنید' },
+        { regex: /[^a-zA-Z0-9]/, hint: 'از نمادها استفاده کنید' },
+      ];
+
+      checks.forEach(check => {
+        if (check.regex.test(pwd)) {
+          score++;
+        } else {
+          hintsList.innerHTML += `<li>${check.hint}</li>`;
+        }
+      });
+
+      crackTimeDisplay.textContent = `زمان تقریبی هک شدن: ${estimateCrackTime(pwd)}`;
+
+      const colors = ['bg-red-500', 'bg-orange-400', 'bg-yellow-400', 'bg-blue-400', 'bg-green-500'];
+      const labels = ['خیلی ضعیف', 'ضعیف', 'متوسط', 'قوی', 'خیلی قوی'];
+
+      strengthBar.className = `h-3 rounded-md transition-all ${colors[score - 1] || 'bg-gray-300'}`;
+      strengthBar.style.width = `${(score / checks.length) * 100}%`;
+      strengthLabel.textContent = labels[score - 1] || '';
+    }
+
+    function generatePassword() {
+      const length = parseInt(lengthSlider.value);
+      // Read toggle states
+      const useUpper = document.getElementById('toggle-uppercase').getAttribute('data-enabled') === 'true';
+      const useLower = document.getElementById('toggle-lowercase').getAttribute('data-enabled') === 'true';
+      const useNumbers = document.getElementById('toggle-numbers').getAttribute('data-enabled') === 'true';
+      const useSymbols = document.getElementById('toggle-symbols').getAttribute('data-enabled') === 'true';
+
+      const charsets = {
+        upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        lower: 'abcdefghijklmnopqrstuvwxyz',
+        numbers: '0123456789',
+        symbols: '!@#$%^&*()_+{}:"<>?|[];\',./`~'
+      };
+
+      let charset = '';
+      if (useUpper) charset += charsets.upper;
+      if (useLower) charset += charsets.lower;
+      if (useNumbers) charset += charsets.numbers;
+      if (useSymbols) charset += charsets.symbols;
+
+      if (!charset) {
+        generatedPasswordField.value = '⚠️ حداقل یک گزینه را انتخاب کنید';
+        return;
+      }
+
+      let password = '';
+      for (let i = 0; i < length; i++) {
+        password += charset.charAt(Math.floor(Math.random() * charset.length));
+      }
+
+      generatedPasswordField.value = password;
+    }
+
+    function copyPassword() {
+      generatedPasswordField.select();
+      document.execCommand('copy');
+      copyBtn.textContent = 'کپی شد!';
+      setTimeout(() => (copyBtn.textContent = 'کپی'), 2000);
+    }
+
+    passwordInput.addEventListener('input', updateStrength);
+    generateBtn.addEventListener('click', generatePassword);
+    copyBtn.addEventListener('click', copyPassword);
+    lengthSlider.addEventListener('input', () => {
+      lengthVal.textContent = lengthSlider.value;
+    });
+  </script>
+</body>
+</html>
